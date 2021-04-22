@@ -188,6 +188,8 @@ STATIC_URL = '/static/'
 # 配置静态文件加载路径
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
 # 图片的统一路由
 MEDIA_URL = '/media/'
 
