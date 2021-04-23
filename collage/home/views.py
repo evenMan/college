@@ -2,17 +2,52 @@ import json
 
 from django.core import serializers
 from django.core.paginator import Paginator, EmptyPage
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseNotFound
 from django.shortcuts import render
-from home.models import HomeCategory
+from home.models import HomeCategory,Location, Category
 # Create your views here.
 
+# 首页分类接口
+def ClassifyList(request):
+    # 和前端约定的返回格式
+    result = {"message": 'success', "code": '200', "data": []}
+
+    try:
+        # 获取列表数据
+        category = Category.objects.all()
+    except Exception as result:
+        print("捕获到了异常，信息是:%s" % result)
+
+    # 序列化数据列表
+    json_string = serializers.serialize('json', category)
+    # 字符串转json
+    data = json.loads(json_string)
+    # 取出fields内容，去除model、pk，fields
+    arr = []
+    arr2 = []
+    for item in data:
+        item['fields']['id'] = item['pk']
+        arr.append(item['fields'])
+
+    # 赋值给data
+    result['data'] = arr
+    # 总数
+    result['totalCount'] = category.count()
+    # 转换为 JSON 字符串并返回
+    return JsonResponse(result)
+
+
+
+# 首页列表接口
 def HomeList(request):
     # 和前端约定的返回格式
     result = {"message": 'success', "code": '200', "data": []}
 
-    # 获取列表数据
-    article = HomeCategory.objects.all()
+    try:
+        # 获取列表数据
+        article = HomeCategory.objects.all()
+    except Exception as result:
+        print("捕获到了异常，信息是:%s" % result)
 
     # 第几页
     page_num = request.GET.get('pageNum')
@@ -50,3 +85,27 @@ def HomeList(request):
     result['totalCount'] = article.count()
     # 转换为 JSON 字符串并返回
     return JsonResponse(result)
+
+
+# 商品详情
+def HomeDetails(request):
+    result = {"message": 'success', "code": '200', "data": {}}
+    # 接收数据
+    id = request.GET.get('id')
+    # 判断文章是否存在
+    try:
+        details = HomeCategory.objects.filter(id=id)
+        result["data"] = serializers.serialize('json', details)
+    except HomeCategory.DoesNotExist:
+        return HttpResponseNotFound('没有此详情页')
+    # 转换为 JSON 字符串并返回
+    return JsonResponse(result)
+
+
+
+
+
+
+
+
+
