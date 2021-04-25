@@ -1,3 +1,5 @@
+import random
+
 from django.db import models
 from django.utils import timezone
 from ckeditor_uploader.fields import RichTextUploadingField
@@ -59,30 +61,41 @@ class Category(models.Model):
 class HomeCategory(models.Model):
     # 美食标题
     title = models.CharField(max_length=100, blank=False, null=False, verbose_name='主标题')
+    random_string = str(random.randint(10000, 99999))
     # 首页主图
-    homeImage = models.ImageField(upload_to='home/%Y%m%d%H%M%S', verbose_name='主图片')
+    homeImage = models.ImageField(max_length=300, upload_to='home/%Y%m%d%H%M%S'+random_string, verbose_name='主图片')
+    # 轮播图1
+    bannerOne = models.ImageField(max_length=300, upload_to='home/%Y%m%d%H%M%S'+random_string, default='', blank=True, null=True, verbose_name='轮播图1(非必传)')
+    # 轮播图2
+    bannerSecond = models.ImageField(max_length=300, upload_to='home/%Y%m%d%H%M%S'+random_string, default='', blank=True, null=True, verbose_name='轮播图2(非必传)')
+    # 视频上传
+    video = models.FileField(max_length=300, upload_to='home/videos/%Y%m%d%H%M%S'+random_string,default='', blank=True, null=True, verbose_name='视频上传(非必传)')
     # 所在城市
-    location = models.ForeignKey(Location, null=True, blank=True, on_delete=models.CASCADE, related_name='homecategory',verbose_name='所在城市')
+    location = models.ForeignKey(Location, blank=True, null=True, on_delete=models.CASCADE, related_name='homecategory',verbose_name='所在城市')
     # 分类
-    category = models.ForeignKey(Category, null=True, blank=True, on_delete=models.CASCADE, related_name='homecategory', verbose_name='选择分类')
+    category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.CASCADE, related_name='homecategory', verbose_name='选择分类')
+    # 套餐标题
+    setMeal = models.CharField(max_length=100, default='', blank=False, null=False, verbose_name='套餐标题')
     # 总库存数量
     allNum = models.IntegerField(default=0, blank=True, verbose_name='总库存数')
-    # 美食介绍
-    home_desc = models.TextField(max_length=500, blank=True, verbose_name='介绍说明')
+    # 原价
+    originPrices = models.FloatField(default=0.00, blank=True, verbose_name='原价格')
+    # 现价
+    prices = models.FloatField(default=0.00, blank=True, verbose_name='现价格')
     # 创建时间
     createTime = models.DateTimeField(default=timezone.now, verbose_name='创建时间')
     # 结束时间
     endTime = models.DateTimeField(default=timezone.now, verbose_name='结束时间')
+    # 美食介绍
+    home_desc = models.TextField(max_length=500, blank=True, null=True, verbose_name='介绍说明')
     # 商品详情
-    desc_pack = RichTextUploadingField(default='', verbose_name='商品详情')
+    desc_pack = RichTextUploadingField(default='',blank=True, null=True, verbose_name='商品详情')
+
 
     class Meta:
         db_table = 'tb_homeList'
         verbose_name = '首页列表'
         verbose_name_plural = verbose_name
-
-
-
 
 
 

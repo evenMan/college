@@ -2,10 +2,18 @@ import json
 
 from django.core import serializers
 from django.core.paginator import Paginator, EmptyPage
-from django.http import JsonResponse, HttpResponseNotFound
+from django.http import JsonResponse, HttpResponseNotFound, HttpResponse
 from django.shortcuts import render
 from home.models import HomeCategory,Location, Category
 # Create your views here.
+
+from django.middleware.csrf import get_token
+
+
+def getToken(request):
+    token = get_token(request)
+    return HttpResponse(json.dumps({'token': token}), content_type="application/json,charset=utf-8")
+
 
 # 首页分类接口
 def ClassifyList(request):
@@ -66,8 +74,8 @@ def HomeList(request):
     # 拼接图片路径
     for model in page_article:
         model.homeImage = request.scheme + '://' + request.META['HTTP_HOST'] + '/media/' + model.homeImage.__str__()
-        # if model.video:
-        #     model.video = request.scheme + '://' + request.META['HTTP_HOST'] + '/media/' + model.video.__str__()
+        if model.video:
+            model.video = request.scheme + '://' + request.META['HTTP_HOST'] + '/media/' + model.video.__str__()
     # 序列化数据列表
     json_string = serializers.serialize('json', page_article, fields=('title', 'homeImage', 'location', 'category', 'allNum', 'home_desc', 'createTime', 'endTime'))
     # 字符串转json
@@ -89,15 +97,39 @@ def HomeList(request):
 
 # 商品详情
 def HomeDetails(request):
-    result = {"message": 'success', "code": '200', "data": {}}
     # 接收数据
-    id = request.GET.get('id')
+    id = request.POST.get('id')
+    print('id')
+    print(id)
+
     # 判断文章是否存在
     try:
-        details = HomeCategory.objects.filter(id=id)
-        result["data"] = serializers.serialize('json', details)
+        details = HomeCategory.objects.filter(pk=id)
+
+        result = {"message": 'success', "code": '200', "data": []}
+
+        # 拼接图片路径
+        for model in details:
+            model.homeImage = request.scheme + '://' + request.META['HTTP_HOST'] + '/media/' + model.homeImage.__str__()
+            if model.video:
+                model.video = request.scheme + '://' + request.META['HTTP_HOST'] + '/media/' + model.video.__str__()
+            if model.bannerOne:
+                model.bannerOne = request.scheme + '://' + request.META['HTTP_HOST'] + '/media/' + model.bannerOne.__str__()
+            if model.bannerSecond:
+                model.bannerSecond = request.scheme + '://' + request.META['HTTP_HOST'] + '/media/' + model.bannerSecond.__str__()
+        json_string = serializers.serialize('json', details)
+        data = json.loads(json_string)
+        arr = []
+        arr2 = []
+        for item in data:
+            item['fields']['id'] = item['pk']
+            arr.append(item['fields'])
+
+        # 赋值给data
+        result['data'] = arr
     except HomeCategory.DoesNotExist:
-        return HttpResponseNotFound('没有此详情页')
+        result = {"message": 'success', "code": '404', "data": []}
+        return JsonResponse(result)
     # 转换为 JSON 字符串并返回
     return JsonResponse(result)
 

@@ -13,8 +13,7 @@ admin.site.register(Category)
 # 首页列表
 @admin.register(HomeCategory)
 class HomeCategoryAdmin(admin.ModelAdmin):
-    list_display = ['title', 'category', 'allNum', 'createTime', 'endTime']
-
+    list_display = ['title', 'category', 'createTime', 'endTime']
 
 
 # @admin.register(Article)
