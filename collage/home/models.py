@@ -86,6 +86,16 @@ class HomeCategory(models.Model):
     createTime = models.DateTimeField(default=timezone.now, verbose_name='创建时间')
     # 结束时间
     endTime = models.DateTimeField(default=timezone.now, verbose_name='结束时间')
+    # 地址
+    address = models.CharField(max_length=200, default='', blank=False, null=False, verbose_name='地址详情')
+    # 电话
+    mobile = models.CharField(max_length=100, default='', blank=False, null=False, verbose_name='商家电话')
+    # 老板有话说
+    bossSay = models.CharField(max_length=200,default='', blank=False, null=False, verbose_name='老板有话说')
+    #精度
+    longitude = models.FloatField(default=0.00, blank=True, verbose_name='精度')
+    # 纬度
+    latitude = models.FloatField(default=0.00, blank=True, verbose_name='纬度')
     # 美食介绍
     home_desc = models.TextField(max_length=500, blank=True, null=True, verbose_name='介绍说明')
     # 商品详情
