@@ -1,18 +1,127 @@
 import json
 
+import requests
 from django.core import serializers
 from django.core.paginator import Paginator, EmptyPage
-from django.http import JsonResponse, HttpResponseNotFound, HttpResponse
+from django.db import DatabaseError
+from django.http import JsonResponse, HttpResponseNotFound, HttpResponse, request, HttpResponseBadRequest
 from django.shortcuts import render
-from home.models import HomeCategory,Location, Category
+from home.models import HomeCategory,Location, Category, Users
+import base64
+from Crypto.Cipher import AES
+
 # Create your views here.
 
 from django.middleware.csrf import get_token
+
+from utils.WXBizDataCrypt import WXBizDataCrypt
 
 
 def getToken(request):
     token = get_token(request)
     return HttpResponse(json.dumps({'token': token}), content_type="application/json,charset=utf-8")
+
+
+# 获取微信小程序opneid
+def get_code(request):
+    JSCODE = request.POST.get("code")
+    encryptedData = request.POST.get("encryptedData")
+    iv = request.POST.get("iv")
+    APPID = "wx19d2ad3ecd9ee6f8"
+    SECRET = "79e5ea7a3420a877831b8b8b949da446"
+    url = 'https://api.weixin.qq.com/sns/jscode2session?appid={appid}&secret={secret}&js_code={code}&grant_type=authorization_code'.format(
+        appid=APPID, secret=SECRET, code=JSCODE)
+    res = requests.get(url)
+    return JsonResponse(res.json())
+
+def decrypt(request):
+    openid = request.POST.get("openid")
+    session_key = request.POST.get("sessionKey")
+    encryptedData1 = request.POST.get("encryptedData")
+    iv1 = request.POST.get("iv")
+
+    sessionKey = base64.b64decode(session_key)
+    encryptedData = base64.b64decode(encryptedData1)
+    iv = base64.b64decode(iv1)
+    cipher = AES.new(sessionKey, AES.MODE_CBC, iv)
+    s = cipher.decrypt(encryptedData)
+    unpad = s[:-ord(s[len(s) - 1:])]
+    decrypted = json.loads(unpad)
+    print(decrypted['phoneNumber'])
+    user = Users.objects.get(openid=openid)
+    print(user)
+    user.phone = decrypted['phoneNumber']
+    user.save()
+
+    result = {"message": 'success', "code": '200', "data": '登录成功!'}
+    return JsonResponse(result)
+
+
+# 用户注册信息
+def RegisterUsers(request):
+    # 接收参数
+    openid = request.POST.get('openid')
+    session_key = request.POST.get('session_key')
+    avatarUrl = request.POST.get('avatarUrl')
+    nickName = request.POST.get('nickName')
+    gender = request.POST.get('gender')
+    country = request.POST.get('country')
+    province = request.POST.get('province')
+    city = request.POST.get('city')
+
+    # 判断参数是否齐全
+    if not all([openid, session_key, avatarUrl, nickName]):
+        return HttpResponseBadRequest('缺少必传参数')
+
+    try:
+        result = {"message": 'success', "code": '200', "data": []}
+        user = Users.objects.filter(openid=openid)
+        json_string = serializers.serialize('json', user)
+        data = json.loads(json_string)
+        arr = []
+        arr2 = []
+        for item in data:
+            item['fields']['id'] = item['pk']
+            arr.append(item['fields'])
+        # 赋值给data
+        result['data'] = arr
+        return JsonResponse(result)
+    except Users.DoesNotExist:
+        # 保存注册数据
+        try:
+            user = Users.objects.create(openid=openid, session_key=session_key, avatarUrl=avatarUrl, nickName=nickName,
+                                        gender=gender, country=country, province=province, city=city)
+            result = {"message": 'success', "code": '200', "data": '注册成功!'}
+            return JsonResponse(result)
+        except DatabaseError:
+            return JsonResponse('注册失败')
+
+
+#查询用户信息
+def GetUserInfo(request):
+    openid = request.POST.get('openid')
+
+    # 和前端约定的返回格式
+    result = {"message": 'success', "code": '200', "data": []}
+    try:
+        user = Users.objects.filter(openid=openid)
+        # 序列化数据列表
+        json_string = serializers.serialize('json', user)
+        # 字符串转json
+        data = json.loads(json_string)
+        # 取出fields内容，去除model、pk，fields
+        arr = []
+        arr2 = []
+        for item in data:
+            item['fields']['id'] = item['pk']
+            arr.append(item['fields'])
+
+        # 赋值给data
+        result['data'] = arr
+        return JsonResponse(result)
+    except DatabaseError:
+        return JsonResponse('获取失败')
+
 
 
 # 首页分类接口

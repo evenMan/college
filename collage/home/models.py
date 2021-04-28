@@ -6,6 +6,24 @@ from ckeditor_uploader.fields import RichTextUploadingField
 
 # Create your models here.
 
+# 用户信息
+class Users(models.Model):
+    openid = models.CharField(max_length=100, null=False, blank=False)
+    session_key = models.CharField(max_length=100, null=False, blank=False)
+    expert = models.BooleanField(default=False, verbose_name='是否开通达人')
+    avatarUrl = models.CharField(max_length=300, default='', blank=True, verbose_name='头像')
+    nickName = models.CharField(max_length=100, default='', blank=True, verbose_name='昵称')
+    gender = models.CharField(max_length=100, default='', blank=True, verbose_name='性别')
+    country = models.CharField(max_length=100, default='', blank=True, verbose_name='国家')
+    province = models.CharField(max_length=100, default='', blank=True, verbose_name='省份')
+    city = models.CharField(max_length=100, default='', blank=True, verbose_name='城市')
+    phone = models.CharField(max_length=11, default='', blank=True, verbose_name='手机号')
+
+    class Meta:
+        db_table = 'tb_users'
+        verbose_name = '用户信息'
+        verbose_name_plural = verbose_name
+
 # 文章功能
 class Article(models.Model):
 
