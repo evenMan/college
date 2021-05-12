@@ -5,6 +5,7 @@ from home.views import HomeList, ClassifyList, HomeDetails,getToken,get_code, de
 urlpatterns = [
     path('homeList/',views.HomeList,name='homeList'),
     path('classifyList/',views.ClassifyList,name='classifyList'),
+    path('homeClassifyList/',views.HomeClassifyList,name='homeClassifyList'),
     path('homeDetails/',views.HomeDetails,name='homeDetails'),
     path('api/code/',views.get_code,name='code'),
     path('api/get_token/',views.getToken,name='get_token'),

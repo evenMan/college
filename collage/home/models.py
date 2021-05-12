@@ -88,6 +88,8 @@ class HomeCategory(models.Model):
     bannerSecond = models.ImageField(max_length=300, upload_to='home/%Y%m%d%H%M%S'+random_string, default='', blank=True, null=True, verbose_name='轮播图2(非必传)')
     # 视频上传
     video = models.FileField(max_length=300, upload_to='home/videos/%Y%m%d%H%M%S'+random_string,default='', blank=True, null=True, verbose_name='视频上传(非必传)')
+    # 上传海报
+    poster = models.ImageField(max_length=300, upload_to='home/%Y%m%d%H%M%S'+random_string, default='', blank=True, null=True, verbose_name='上传海报(必传)')
     # 所在城市
     location = models.ForeignKey(Location, blank=True, null=True, on_delete=models.CASCADE, related_name='homecategory',verbose_name='所在城市')
     # 分类

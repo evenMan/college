@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 SECRET_KEY = 'j^-+-4o+a095k+4qsw9%(qhv$p=p3t8q)k(0bhvy^ub^v+31zc'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['*', ]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -90,14 +90,14 @@ DATABASES = {
 CACHES = {
     "default": { # 默认
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://8.140.183.61:6379/0",
+        "LOCATION": "redis://127.0.0.1:6379/0",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     },
     "session": { # session
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://8.140.183.61:6379/1",
+        "LOCATION": "redis://127.0.0.1:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
@@ -183,13 +183,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-
 STATIC_URL = '/static/'
+
 # 配置静态文件加载路径
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-
-STATIC_ROOT = '/home/collage/static/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
@@ -214,13 +211,3 @@ CKEDITOR_CONFIGS = {
         'width': 800,  # 编辑器宽
     },
 }
-
-# SECURITY安全设置 - 支持http时建议开启
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")   # 推荐
-#SECURE_SSL_REDIRECT = True # 将所有非SSL请求永久重定向到SSL
-SESSION_COOKIE_SECURE = True # 仅通过https传输cookie
-CSRF_COOKIE_SECURE = True # 仅通过https传输cookie
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True # 严格要求使用https协议传输
-SECURE_HSTS_PRELOAD = True # HSTS为
-SECURE_HSTS_SECONDS = 60
-SECURE_CONTENT_TYPE_NOSNIFF = True # 防止浏览器猜测资产的内容类型
